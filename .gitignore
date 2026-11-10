@@ -1,0 +1,20 @@
+
+# Maven build files
+target/
+
+# IntelliJ IDEA
+.idea/
+*.iml
+
+# Eclipse
+.classpath
+.project
+.settings/
+
+# Logs
+*.log
+
+# Environment and secrets
+.env
+application-local.yml
+application-local.properties

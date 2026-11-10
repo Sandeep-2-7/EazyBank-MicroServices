@@ -1,0 +1,42 @@
+name: eazybank-microservices
+services:
+  accounts:
+    image: "sandeep2710/accounts:acc"
+    container_name: accounts
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    deploy:
+      resources:
+        limits:
+          memory: 900m
+    networks:
+      sandeep:
+  loans:
+    image: "sandeep2710/loans:loa"
+    container_name: loans
+    restart: unless-stopped
+    ports:
+      - "8090:8090"
+    deploy:
+      resources:
+        limits:
+          memory: 900m
+    networks:
+      sandeep:
+  cards:
+    image: "sandeep2710/cards:car"
+    container_name: cards
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+    deploy:
+      resources:
+        limits:
+          memory: 900m
+    networks:
+      sandeep:
+
+networks:
+  sandeep:
+    driver: bridge

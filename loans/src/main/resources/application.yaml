@@ -1,0 +1,26 @@
+server:
+  port: 8090
+spring:
+  application:
+    name: loans
+  datasource:
+    url: "jdbc:h2:mem::testDb"
+    driverClassName: "org.h2.Driver"
+    userName: sa
+    password: ''
+  h2:
+    console:
+      enabled: true
+  jpa:
+    database-platform: "org.hibernate.dialect.H2Dialect"
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  profiles:
+    active:
+      - "prod"
+  config:
+    import: "optional:configserver:http://localhost:8071/"
+logging:
+  pattern:
+    console: ${CONSOLE_LOG_PATTERN:%green(%d{HH:mm:ss.SSS}) %blue(%-5level) %red([%thread]) %yellow(%logger{15}) - %cyan(%msg%n)}
