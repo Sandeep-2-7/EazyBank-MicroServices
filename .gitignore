@@ -10,6 +10,7 @@ target/
 .classpath
 .project
 .settings/
+/configserver/
 
 # Logs
 *.log
