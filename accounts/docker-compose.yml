@@ -1,5 +1,47 @@
 name: eazybank-microservices
 services:
+  rabbit:
+    image: rabbitmq:4-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+    healthcheck:
+      test: rabbitmq-diagnostics check_port_connectivity
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    networks:
+      - sandeep
+
+  configserver:
+    image: "sandeep2710/configserver:config"
+    container_name: configserver
+    restart: unless-stopped
+    ports:
+      - "8071:8071"
+    deploy:
+      resources:
+        limits:
+          memory: 900m
+    healthcheck:
+      test: [ "CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/8071 && printf 'GET /actuator/health/readiness HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n' >&3 && grep -q '\"status\":\"UP\"' <&3" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    depends_on:
+      rabbit:
+        condition: service_healthy
+    environment:
+      SPRING_RABBITMQ_HOST: "rabbit"
+    networks:
+      - sandeep
+
   accounts:
     image: "sandeep2710/accounts:acc"
     container_name: accounts
@@ -10,8 +52,16 @@ services:
       resources:
         limits:
           memory: 900m
+    depends_on:
+      configserver:
+        condition: service_healthy
+    environment:
+      SPRING_RABBITMQ_HOST: "rabbit"
+      SPRING_CONFIG_IMPORT: configserver:http://configserver:8071/
+      SPRING_PROFILES_ACTIVE: default
     networks:
-      sandeep:
+      - sandeep
+
   loans:
     image: "sandeep2710/loans:loa"
     container_name: loans
@@ -22,8 +72,16 @@ services:
       resources:
         limits:
           memory: 900m
+    depends_on:
+      configserver:
+        condition: service_healthy
+    environment:
+      SPRING_RABBITMQ_HOST: "rabbit"
+      SPRING_CONFIG_IMPORT: configserver:http://configserver:8071/
+      SPRING_PROFILES_ACTIVE: default
     networks:
-      sandeep:
+      - sandeep
+
   cards:
     image: "sandeep2710/cards:car"
     container_name: cards
@@ -34,8 +92,15 @@ services:
       resources:
         limits:
           memory: 900m
+    depends_on:
+      configserver:
+        condition: service_healthy
+    environment:
+      SPRING_RABBITMQ_HOST: "rabbit"
+      SPRING_CONFIG_IMPORT: configserver:http://configserver:8071/
+      SPRING_PROFILES_ACTIVE: default
     networks:
-      sandeep:
+      - sandeep
 
 networks:
   sandeep:
