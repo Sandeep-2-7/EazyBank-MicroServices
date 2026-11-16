@@ -1,29 +1,42 @@
 name: eazybank-microservices
 services:
-  rabbit:
-    image: rabbitmq:4-management
+  accountsdb:
+    container_name: accountsdb
     ports:
-      - "5672:5672"
-      - "15672:15672"
-    deploy:
-      resources:
-        limits:
-          memory: 512m
-    healthcheck:
-      test: rabbitmq-diagnostics check_port_connectivity
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 5s
+      - "3306:3306"
+    volumes:
+      - S:\Inside\SHIFT\Java_Madhan\DB\accounts-data:/var/lib/mysql
     environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:?set RABBITMQ_DEFAULT_USER in the env file}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:?set RABBITMQ_DEFAULT_PASS in the env file}
+      MYSQL_DATABASE: accountsdb
     extends:
       file: common-config.yml
-      service: network-deploy-service
+      service: microservice-db-config
+
+  loansdb:
+    container_name: loanssdb
+    ports:
+      - "3307:3306"
+    volumes:
+      - S:\Inside\SHIFT\Java_Madhan\DB\loans-data:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: loansdb
+    extends:
+      file: common-config.yml
+      service: microservice-db-config
+  cardsdb:
+    container_name: cardsdb
+    ports:
+      - "3308:3306"
+    volumes:
+      - S:\Inside\SHIFT\Java_Madhan\DB\cards-data:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: cardsdb
+    extends:
+      file: common-config.yml
+      service: microservice-db-config
 
   configserver:
-    image: "sandeep2710/configserver:${IMAGE_TAG:-s6}"
+    image: "sandeep2710/configserver:config"
     container_name: configserver-ms
     ports:
       - "8071:8071"
@@ -33,49 +46,58 @@ services:
       timeout: 5s
       retries: 10
       start_period: 5s
-    depends_on:
-      rabbit:
-        condition: service_healthy
     extends:
       file: common-config.yml
       service: microservice-base-config
 
   accounts:
-    image: "sandeep2710/accounts:${IMAGE_TAG:-s6}"
+    image: "sandeep2710/accounts:acc"
     container_name: accounts-ms
     ports:
-        - "8080:8080"
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:mysql://accountsdb:3306/accountsdb"
     depends_on:
       configserver:
+        condition: service_healthy
+      accountsdb:
         condition: service_healthy
     extends:
       file: common-config.yml
       service: microservice-configserver-config
 
   loans:
-    image: "sandeep2710/loans:${IMAGE_TAG:-s6}"
+    image: "sandeep2710/loans:loa"
     container_name: loans-ms
     ports:
       - "8090:8090"
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:mysql://loansdb:3306/loansdb"
     depends_on:
       configserver:
+        condition: service_healthy
+      loansdb:
         condition: service_healthy
     extends:
       file: common-config.yml
       service: microservice-configserver-config
 
   cards:
-    image: "sandeep2710/cards:${IMAGE_TAG:-s6}"
+    image: "sandeep2710/cards:car"
     container_name: cards-ms
     ports:
       - "9000:9000"
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:mysql://cardsdb:3306/cardsdb"
     depends_on:
       configserver:
+        condition: service_healthy
+      cardsdb:
         condition: service_healthy
     extends:
       file: common-config.yml
       service: microservice-configserver-config
 
 networks:
-  eazybank:
+  sandeep:
     driver: bridge
