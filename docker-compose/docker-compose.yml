@@ -17,7 +17,7 @@ services:
       service: microservice-base-config
 
   eurekaserver:
-    image: "sandeep2710/eurekaerver:eur"
+    image: "sandeep2710/eurekaserver:eur"
     container_name: eurekaserver-ms
     ports:
       - "8070:8070"
