@@ -51,8 +51,6 @@ services:
     container_name: loans-ms
     ports:
       - "8090:8090"
-    environment:
-      SPRING_DATASOURCE_URL: "jdbc:mysql://loansdb:3306/loansdb"
     depends_on:
       configserver:
         condition: service_healthy
@@ -65,8 +63,6 @@ services:
     container_name: cards-ms
     ports:
       - "9000:9000"
-    environment:
-      SPRING_DATASOURCE_URL: "jdbc:mysql://cardsdb:3306/cardsdb"
     depends_on:
       configserver:
         condition: service_healthy
