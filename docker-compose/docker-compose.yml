@@ -1,39 +1,5 @@
 name: eazybank-microservices
 services:
-  accountsdb:
-    container_name: accountsdb
-    ports:
-      - "3306:3306"
-    volumes:
-      - S:\Inside\SHIFT\Java_Madhan\DB\accounts-data:/var/lib/mysql
-    environment:
-      MYSQL_DATABASE: accountsdb
-    extends:
-      file: common-config.yml
-      service: microservice-db-config
-
-  loansdb:
-    container_name: loanssdb
-    ports:
-      - "3307:3306"
-    volumes:
-      - S:\Inside\SHIFT\Java_Madhan\DB\loans-data:/var/lib/mysql
-    environment:
-      MYSQL_DATABASE: loansdb
-    extends:
-      file: common-config.yml
-      service: microservice-db-config
-  cardsdb:
-    container_name: cardsdb
-    ports:
-      - "3308:3306"
-    volumes:
-      - S:\Inside\SHIFT\Java_Madhan\DB\cards-data:/var/lib/mysql
-    environment:
-      MYSQL_DATABASE: cardsdb
-    extends:
-      file: common-config.yml
-      service: microservice-db-config
 
   configserver:
     image: "sandeep2710/configserver:config"
@@ -50,21 +16,35 @@ services:
       file: common-config.yml
       service: microservice-base-config
 
+  eurekaserver:
+    image: "sandeep2710/eurekaerver:eur"
+    container_name: eurekaserver-ms
+    ports:
+      - "8070:8070"
+    depends_on:
+      configserver:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/8070 && printf 'GET /actuator/health/readiness HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n' >&3 && grep -q '\"status\":\"UP\"' <&3" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    extends:
+      file: common-config.yml
+      service: microservice-configserver-config
+
   accounts:
     image: "sandeep2710/accounts:acc"
     container_name: accounts-ms
     ports:
       - "8080:8080"
-    environment:
-      SPRING_DATASOURCE_URL: "jdbc:mysql://accountsdb:3306/accountsdb"
     depends_on:
       configserver:
         condition: service_healthy
-      accountsdb:
-        condition: service_healthy
     extends:
       file: common-config.yml
-      service: microservice-configserver-config
+      service: microservice-eureka-config
 
   loans:
     image: "sandeep2710/loans:loa"
@@ -76,11 +56,9 @@ services:
     depends_on:
       configserver:
         condition: service_healthy
-      loansdb:
-        condition: service_healthy
     extends:
       file: common-config.yml
-      service: microservice-configserver-config
+      service: microservice-eureka-config
 
   cards:
     image: "sandeep2710/cards:car"
@@ -92,11 +70,9 @@ services:
     depends_on:
       configserver:
         condition: service_healthy
-      cardsdb:
-        condition: service_healthy
     extends:
       file: common-config.yml
-      service: microservice-configserver-config
+      service: microservice-eureka-config
 
 networks:
   sandeep:
