@@ -53,7 +53,7 @@ management:
       access: unrestricted
     health:
       probes:
-        enabled: truea
+        enabled: true
   health:
     readiness-state:
       enabled: true
