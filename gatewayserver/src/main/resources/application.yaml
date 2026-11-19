@@ -9,8 +9,8 @@ spring:
         webflux:
           discovery:
             locator:
-              enabled: true
-
+              enabled: false
+              lowerCaseServiceId: true
 management:
   endpoints:
     web:
@@ -35,5 +35,5 @@ logging:
     console: ${CONSOLE_LOG_PATTERN:%green(%d{HH:mm:ss.SSS}) %blue(%-5level) %red([%thread]) %yellow(%logger{15}) - %cyan(%msg%n)}
   level:
     com:
-      eazybank:
+      eazybytes:
         gatewayserver: DEBUG
