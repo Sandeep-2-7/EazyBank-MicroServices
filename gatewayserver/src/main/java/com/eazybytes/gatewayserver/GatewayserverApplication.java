@@ -17,7 +17,7 @@ public class GatewayserverApplication {
     public RouteLocator eazyBankRouteConfig(RouteLocatorBuilder builder) {
         return builder.routes()
                 .route((p) -> p.path("/eazybank/accounts/**").filters(f -> f.rewritePath("/eazybank/accounts/(?<segment>.*)","/${segment}")
-                                .circuitBreaker(config -> config.setName("accountsCircuitBreaker")))
+                                .circuitBreaker(config -> config.setName("accountsCircuitBreaker").setFallbackUri("forward:/contactSupport")))
                         .uri("lb://ACCOUNTS"))
                 .route((p) -> p.path("/eazybank/loans/**").filters(f -> f.rewritePath("/eazybank/loans/(?<segment>.*)","/${segment}"))
                         .uri("lb://LOANS"))
