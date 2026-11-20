@@ -8,6 +8,7 @@ import com.eazybytes.cards.dto.CardsDto;
 import com.eazybytes.cards.dto.ErrorResponseDto;
 import com.eazybytes.cards.dto.ResponseDto;
 import com.eazybytes.cards.service.ICardsService;
+import io.github.resilience4j.bulkhead.annotation.Bulkhead;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -244,10 +245,18 @@ public class CardsController {
     }
     )
     @GetMapping("/contact-info")
-    public ResponseEntity<CardsContactInfoDto> getContactInfo() {
+    @Bulkhead(name = "getContactInfo", fallbackMethod = "getContactInfoFallback")
+    public ResponseEntity<CardsContactInfoDto> getContactInfo() throws InterruptedException{
+        LOGGER.debug("getBuildInfo() method Invoked");
+        Thread.sleep(6000); // simulate a slow call so concurrency limit is easy to hit
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(cardsContactInfoDto);
     }
 
+    public ResponseEntity<String> getContactInfoFallback(){
+        LOGGER.debug("getBuildInfoFallback() method Invoked");
+        return ResponseEntity.status(HttpStatus.OK)
+                .body("GetBuildInfo API Fallback - Too many concurrent requests, please try again later!!!");
+    }
 }
