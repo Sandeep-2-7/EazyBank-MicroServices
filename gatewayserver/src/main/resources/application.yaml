@@ -11,6 +11,10 @@ spring:
             locator:
               enabled: false
               lowerCaseServiceId: true
+          httpclient:
+            connectionTimeout: 1000
+            response-timeout: 10s
+
 management:
   endpoints:
     web:
