@@ -12,7 +12,10 @@ import com.eazybytes.accounts.repository.AccountRepository;
 import com.eazybytes.accounts.repository.CustomerRepository;
 import com.eazybytes.accounts.service.IAccountsService;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.AllArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 
@@ -27,12 +30,16 @@ import static com.eazybytes.accounts.mapper.CustomerMapper.mapToCustomerDto;
 @AllArgsConstructor
 public class AccountsService implements IAccountsService {
 
+    private static final Logger logger = LoggerFactory.getLogger(AccountsService.class);
+
     private AccountRepository accountRepository;
     private CustomerRepository customerRepository;
+    private MeterRegistry meterRegistry;
 
 
     @Override
     public void createAccount(CustomerDto customerDto) {
+        logger.debug("Creating customer and account");
         Customer customer = mapToCustomer(customerDto, new Customer());
         Optional<Customer> customerCheck = customerRepository.findByMobileNumber(customer.getMobileNumber());
         if(customerCheck.isPresent())
@@ -42,10 +49,13 @@ public class AccountsService implements IAccountsService {
 
         Customer savedCustomer = customerRepository.save(customer);
         accountRepository.save(createNewAccount(savedCustomer));
+        logger.info("Customer and account created successfully");
+        meterRegistry.counter("accounts.operations", "operation", "created").increment();
     }
 
     @Override
     public CustomerDto fetchAccount(String mobileNumber) {
+        logger.debug("Fetching customer and account details");
         Customer customer = customerRepository.findByMobileNumber(mobileNumber).orElseThrow(() -> new ResourceNotFoundException("Customer", "mobileNumber", mobileNumber));
         Accounts accounts = accountRepository.findByCustomerId(customer.getCustomerId()).orElseThrow(() -> new ResourceNotFoundException("Account", "customerId", customer.getCustomerId().toString()));
 
@@ -53,11 +63,13 @@ public class AccountsService implements IAccountsService {
         mapToCustomerDto(customer, customerDto);
         AccountDto accountDto = new AccountDto();
         customerDto.setAccountDto(AccountsMapper.mapToAccountDto(accounts, accountDto));
+        logger.debug("Customer and account details fetched successfully");
         return customerDto;
     }
 
     @Override
     public boolean updateAccount(CustomerDto customerDto) {
+        logger.debug("Updating customer and account details");
         boolean result = false;
         AccountDto accountDto = customerDto.getAccountDto();
         if(accountDto!=null){
@@ -71,17 +83,22 @@ public class AccountsService implements IAccountsService {
             customerRepository.save(customer);
 
             result = true;
+            logger.info("Customer and account details updated successfully");
         }
+        meterRegistry.counter("accounts.operations", "operation", "updated").increment();
         return result;
     }
 
     @Override
     public boolean deleteAccount(String mobileNumber) {
+        logger.debug("Deleting customer and account");
         Customer customer = customerRepository.findByMobileNumber(mobileNumber).orElseThrow(() -> new ResourceNotFoundException("Customer", "mobileNumber", mobileNumber));
         Accounts account = accountRepository.findByCustomerId(customer.getCustomerId()).orElseThrow(() -> new ResourceNotFoundException("Account", "customerId", customer.getCustomerId().toString()));
         accountRepository.deleteByCustomerId(customer.getCustomerId());
         customerRepository.deleteById(customer.getCustomerId());
         //accountRepository.deleteById(account.getAccountNum());
+        logger.info("Customer and account deleted successfully");
+        meterRegistry.counter("accounts.operations", "operation", "deleted").increment();
         return true;
     }
 

@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Component
 @HttpServiceFallback(value = LoansFallBack.class, group = "loans")
 public class LoansFallBack {
-    public ResponseEntity<LoansDto> fetchLoan(String correlationId, String mobileNumber){
+    public ResponseEntity<LoansDto> fetchLoan(String mobileNumber){
         return null;
     }
 

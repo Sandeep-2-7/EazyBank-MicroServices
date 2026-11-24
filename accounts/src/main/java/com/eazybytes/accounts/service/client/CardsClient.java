@@ -11,5 +11,5 @@ import org.springframework.web.service.annotation.HttpExchange;
 public interface CardsClient {
 
     @GetExchange(value = "/fetch", accept = "application/json")
-    public ResponseEntity<CardsDto> fetchCard(@RequestHeader("eazybank-correlation-id") String correlationId, @RequestParam String mobileNumber);
+    public ResponseEntity<CardsDto> fetchCard(@RequestParam String mobileNumber);
 }

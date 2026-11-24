@@ -70,6 +70,7 @@ public class LoanController {
     public ResponseEntity<ResponseDto> createLoan(@RequestParam
                                                   @Pattern(regexp="(^$|[0-9]{10})",message = "Mobile number must be 10 digits")
                                                   String mobileNumber){
+        LOGGER.debug("createLoan request received");
         iLoanService.createLoan(mobileNumber);
         return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseDto(LoanConstants.STATUS_201, LoanConstants.MESSAGE_201));
     }
@@ -93,10 +94,10 @@ public class LoanController {
     }
     )
     @GetMapping("/fetch")
-    public ResponseEntity<LoansDto> fetchLoans(@RequestHeader("eazybank-correlation-id") String correlationId, @RequestParam
+    public ResponseEntity<LoansDto> fetchLoans(@RequestParam
                                                    @Pattern(regexp="(^$|[0-9]{10})",message = "Mobile number must be 10 digits")
                                                    String mobileNumber){
-        LOGGER.debug("eazybank-correlation-id found: {}", correlationId);
+        LOGGER.debug("fetchLoans request received;");
         LoansDto loansDto =  iLoanService.fetchLoan(mobileNumber);
         return ResponseEntity.status(HttpStatus.OK).body(loansDto);
     }
@@ -125,6 +126,7 @@ public class LoanController {
     )
     @PutMapping("/update")
     public ResponseEntity<ResponseDto> updateLoan(@Valid @RequestBody LoansDto loansDto){
+        LOGGER.debug("updateLoan request received");
         boolean isUpdated = iLoanService.updateLoan(loansDto);
 
         if(isUpdated){
@@ -159,6 +161,7 @@ public class LoanController {
     @DeleteMapping("/delete")
     public ResponseEntity<ResponseDto> deleteLoan(@RequestParam @Pattern(regexp="(^$|[0-9]{10})",message = "Mobile number must be 10 digits")
                                                       String mobileNumber){
+        LOGGER.debug("deleteLoan request received");
         boolean isDeleted = iLoanService.deleteLoan(mobileNumber);
         if(isDeleted) {
             return ResponseEntity
@@ -192,6 +195,7 @@ public class LoanController {
     )
     @GetMapping("/build-info")
     public ResponseEntity<String> getBuildInfo() {
+        LOGGER.debug("getBuildInfo request received");
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(buildVersion);
@@ -217,6 +221,7 @@ public class LoanController {
     )
     @GetMapping("/java-version")
     public ResponseEntity<String> getJavaVersion() {
+        LOGGER.debug("getJavaVersion request received");
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(environment.getProperty("JAVA_HOME"));
@@ -242,6 +247,7 @@ public class LoanController {
     )
     @GetMapping("/contact-info")
     public ResponseEntity<LoansContactInfoDto> getContactInfo() {
+        LOGGER.debug("getContactInfo request received");
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(loansContactInfoDto);

@@ -75,6 +75,7 @@ public class CardsController {
     public ResponseEntity<ResponseDto> createCard(@Valid @RequestParam
                                                   @Pattern(regexp = "(^$|[0-9]{10})", message = "Mobile number must be 10 digits")
                                                   String mobileNumber) {
+        LOGGER.debug("createCard request received");
         cardsService.createCard(mobileNumber);
         return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseDto(CardsConstant.STATUS_200, CardsConstant.MESSAGE_200));
     }
@@ -97,10 +98,10 @@ public class CardsController {
                     )
             )
     })
-    public ResponseEntity<CardsDto> fetchCard(@RequestHeader("eazybank-correlation-id") String correlationId, @Valid @RequestParam
+    public ResponseEntity<CardsDto> fetchCard(@Valid @RequestParam
                                               @Pattern(regexp = "(^$|[0-9]{10})", message = "Mobile number must be 10 digits")
                                               String mobileNumber) {
-        LOGGER.debug("eazybank-correlation-id found: {}", correlationId);
+        LOGGER.debug("fetchCard request received");
         CardsDto cardsDto = cardsService.fetchCard(mobileNumber);
         return ResponseEntity.status(HttpStatus.OK).body(cardsDto);
     }
@@ -128,6 +129,7 @@ public class CardsController {
             )
     })
     public ResponseEntity<ResponseDto> updateCards(@Valid @RequestBody CardsDto cardsDto) {
+        LOGGER.debug("updateCards request received");
         boolean isUpdated = cardsService.updateCard(cardsDto);
         if (isUpdated)
             return ResponseEntity.status(HttpStatus.OK).body(new ResponseDto(CardsConstant.STATUS_200, CardsConstant.MESSAGE_200));
@@ -163,6 +165,7 @@ public class CardsController {
     public ResponseEntity<ResponseDto> deleteCard(@RequestParam
                                                   @Pattern(regexp = "(^$|[0-9]{10})", message = "Mobile number must be 10 digits")
                                                   String mobileNumber) {
+        LOGGER.debug("deleteCard request received");
         boolean isDeleted = cardsService.deleteCard(mobileNumber);
         if (isDeleted) {
             return ResponseEntity
@@ -196,6 +199,7 @@ public class CardsController {
     )
     @GetMapping("/build-info")
     public ResponseEntity<String> getBuildInfo() {
+        LOGGER.debug("getBuildInfo request received");
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(buildVersion);
@@ -221,6 +225,7 @@ public class CardsController {
     )
     @GetMapping("/java-version")
     public ResponseEntity<String> getJavaVersion() {
+        LOGGER.debug("getJavaVersion request received");
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(environment.getProperty("JAVA_HOME"));
@@ -247,7 +252,7 @@ public class CardsController {
     @GetMapping("/contact-info")
     @Bulkhead(name = "getContactInfo", fallbackMethod = "getContactInfoFallback")
     public ResponseEntity<CardsContactInfoDto> getContactInfo() throws InterruptedException{
-        LOGGER.debug("getBuildInfo() method Invoked");
+        LOGGER.debug("getContactInfo request received");
         Thread.sleep(6000); // simulate a slow call so concurrency limit is easy to hit
         return ResponseEntity
                 .status(HttpStatus.OK)
@@ -255,7 +260,7 @@ public class CardsController {
     }
 
     public ResponseEntity<String> getContactInfoFallback(){
-        LOGGER.debug("getBuildInfoFallback() method Invoked");
+        LOGGER.warn("getContactInfo fallback invoked");
         return ResponseEntity.status(HttpStatus.OK)
                 .body("GetBuildInfo API Fallback - Too many concurrent requests, please try again later!!!");
     }

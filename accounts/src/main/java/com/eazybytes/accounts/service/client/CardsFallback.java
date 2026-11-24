@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Component
 @HttpServiceFallback(value = CardsFallback.class, group = "cards")
 public class CardsFallback {
-    public ResponseEntity<CardsDto> fetchCard(String correlationId, String mobileNumber) {
+    public ResponseEntity<CardsDto> fetchCard(String mobileNumber) {
         return null;
     }
 }

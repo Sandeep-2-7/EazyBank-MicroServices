@@ -69,6 +69,7 @@ public class AccountController {
     )
     @PostMapping("/create")
     public ResponseEntity<ResponseDto> createAccount(@Valid @RequestBody CustomerDto customerDto) {
+        log.debug("createAccount request received");
         iAccountsService.createAccount(customerDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseDto(AccountConstant.STATUS_201, AccountConstant.MESSAGE_201));
     }
@@ -85,6 +86,7 @@ public class AccountController {
     }
     )
     public ResponseEntity<CustomerDto> fetchAccount(@RequestParam @Pattern(regexp = "[0-9]{10}", message = "Mobile number must be 10 digits") String mobileNumber) {
+        log.debug("fetchAccount request received");
         CustomerDto customerDto = iAccountsService.fetchAccount(mobileNumber);
         return ResponseEntity.status(HttpStatus.OK).body(customerDto);
     }
@@ -112,6 +114,7 @@ public class AccountController {
     }
     )
     public ResponseEntity<ResponseDto> updateAccount(@Valid @RequestBody CustomerDto customerDto) {
+        log.debug("updateAccount request received");
         Boolean result = iAccountsService.updateAccount(customerDto);
         if (result) {
             return ResponseEntity.status(HttpStatus.OK).body(new ResponseDto(AccountConstant.STATUS_200, AccountConstant.MESSAGE_200));
@@ -145,6 +148,7 @@ public class AccountController {
     )
     @DeleteMapping("/delete")
     public  ResponseEntity<ResponseDto> deleteAccount(@RequestParam @Pattern(regexp = "[0-9]{10}", message = "Mobile number must be 10 digits") String mobileNumber) {
+        log.debug("deleteAccount request received");
         boolean result = iAccountsService.deleteAccount(mobileNumber);
 
         if (result){
@@ -176,6 +180,7 @@ public class AccountController {
     )
     @GetMapping("/build-info")
     public ResponseEntity<String> getBuildInfo() {
+        log.debug("getBuildInfo request received");
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(buildVersion);
@@ -201,12 +206,14 @@ public class AccountController {
     @GetMapping("/java-version")
     @RateLimiter(name="getJavaVersion", fallbackMethod = "getJavaVersionFallback")
     public ResponseEntity<String> getJavaVersion() {
+        log.debug("getJavaVersion request received");
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body("25");
     }
 
     public ResponseEntity<String> getJavaVersionFallback(Throwable throwable) {
+        log.warn("getJavaVersion fallback invoked");
         return ResponseEntity.status(HttpStatus.OK).body("40");
     }
 
@@ -232,7 +239,7 @@ public class AccountController {
     @GetMapping("/contact-info")
     @Retry(name = "getContactInfo", fallbackMethod = "getContactInfoFallback")
     public ResponseEntity<AccountsContactInfoDto> getContactInfo() {
-        log.debug("getContactInfo invoked");
+        log.debug("getContactInfo request received");
 
         return ResponseEntity
                 .status(HttpStatus.OK)
@@ -240,7 +247,7 @@ public class AccountController {
     }
 
     public ResponseEntity<String> getContactInfoFallback(Throwable throwable) {
-        log.debug("getContactInfoFallback method invoked");
+        log.warn("getContactInfo fallback invoked");
         return ResponseEntity.status(HttpStatus.OK).body("Sandeep");
     }
     }
