@@ -1,5 +1,6 @@
 package com.eazybytes.gatewayserver.filter;
 
+import io.micrometer.tracing.Span;
 import io.micrometer.tracing.Tracer;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
@@ -20,6 +21,14 @@ public class TraceIdResponseFilter implements GlobalFilter {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        return null;
+        exchange.getResponse().beforeCommit(() -> {
+            Span currentSpan = tracer.currentSpan();
+            if (currentSpan != null) {
+                exchange.getResponse().getHeaders()
+                        .add(TRACE_ID_HEADER, currentSpan.context().traceId());
+            }
+            return Mono.empty();
+        });
+        return chain.filter(exchange);
     }
 }
