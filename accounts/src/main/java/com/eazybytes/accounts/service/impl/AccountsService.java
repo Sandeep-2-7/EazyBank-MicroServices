@@ -2,6 +2,7 @@ package com.eazybytes.accounts.service.impl;
 
 import com.eazybytes.accounts.constants.AccountConstant;
 import com.eazybytes.accounts.dto.AccountDto;
+import com.eazybytes.accounts.dto.AccountMessageDto;
 import com.eazybytes.accounts.dto.CustomerDto;
 import com.eazybytes.accounts.entity.Accounts;
 import com.eazybytes.accounts.entity.Customer;
@@ -16,6 +17,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.stereotype.Service;
 
 
@@ -35,6 +37,7 @@ public class AccountsService implements IAccountsService {
     private AccountRepository accountRepository;
     private CustomerRepository customerRepository;
     private MeterRegistry meterRegistry;
+    private StreamBridge streamBridge;
 
 
     @Override
@@ -48,10 +51,19 @@ public class AccountsService implements IAccountsService {
         }
 
         Customer savedCustomer = customerRepository.save(customer);
-        accountRepository.save(createNewAccount(savedCustomer));
+        Accounts savedAccount = accountRepository.save(createNewAccount(savedCustomer));
         logger.info("Customer and account created successfully");
         meterRegistry.counter("accounts.operations", "operation", "created").increment();
+        sendCommunication(savedAccount, savedCustomer);
     }
+
+    private void sendCommunication(Accounts accounts, Customer customer){
+        AccountMessageDto accountMessageDto =  new AccountMessageDto(accounts.getAccountNum(), customer.getName(), customer.getEmail(), customer.getMobileNumber());
+        logger.info("Sending Communication request for the details: {}", accountMessageDto);
+        var result = streamBridge.send("sendCommunication-out-0", accountMessageDto);
+        logger.info("Is the Communication request successfully triggered ? : {}", result);
+    }
+
 
     @Override
     public CustomerDto fetchAccount(String mobileNumber) {
