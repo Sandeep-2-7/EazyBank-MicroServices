@@ -2,7 +2,7 @@ spring:
   application:
     name: gatewayserver
   reactor:
-    context-propagation: auto 
+    context-propagation: auto
   config:
     import: "optional:configserver:http://localhost:8071/"
   cloud:
@@ -16,6 +16,11 @@ spring:
           httpclient:
             connectionTimeout: 1000
             response-timeout: 10s
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: "http://localhost:7080/realms/master/protocol/openid-connect/certs"
   data:
     redis:
       connect-timeout: 2s
